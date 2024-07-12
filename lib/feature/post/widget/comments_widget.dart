@@ -8,6 +8,7 @@ class CommentsWidget extends StatelessWidget {
 
   _close(BuildContext context) {
     Navigator.of(context).pop();
+    FocusScope.of(context).unfocus();
   }
 
   @override
