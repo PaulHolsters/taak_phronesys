@@ -1,9 +1,9 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:taak_phronesys/feature/post/page/post_list_page.dart';
 
 void main(){
  // HttpOverrides.global = MyHttpOverrides();
-  runApp(const BoodschappenApp());
+  runApp(const PhronsesysTaak());
 }
 
 /*  class MyHttpOverrides extends HttpOverrides{
@@ -14,13 +14,13 @@ void main(){
   }
 } */
 
-class BoodschappenApp extends StatelessWidget {
-  const BoodschappenApp({super.key});
+class PhronsesysTaak extends StatelessWidget {
+  const PhronsesysTaak({super.key});
 
   @override
   Widget build(BuildContext context) {
     return  const MaterialApp(
-      home: PageWrapper()
+      home: PostListPage()
     );
   }
 }

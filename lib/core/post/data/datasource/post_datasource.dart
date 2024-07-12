@@ -1,20 +1,48 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:taak_phronesys/core/post/data/dto/post_dto.dart';
-class PostDataSource{
-  // deze klasse voert effectief de usecase uit van de verschillende usecases die er zijn
+import 'package:http/http.dart' as http;
 
-  Future<List<PostDTO>> getPosts() async{
-          Uri url = Uri.https(
-          'https://jsonplaceholder.typicode.com', 'posts');
-      final response = await http.get(url,
-          headers: {'Content-Type': 'application/json; charset=UTF-8'});
-      final body = json.decode(response.body);
-      List<PostDTO> posts = [];
-      for(final item in body){
-          posts.add(PostDTO.fromJson(item));
-      }    
-      return posts;    
+class PostDataSource {
+  // dit zijn alle naakte API's, los van business betekenis, hier komen dus enkel DTO's in voor
+  // per dto type moet je dus ook zo'n datasource hebben
+
+  Future<List<PostDTO>> getPosts() async {
+    Uri url = Uri.https('jsonplaceholder.typicode.com', 'posts');
+ 
+    final response = await http.get(url, headers: {
+      'Content-Type': 'application/json; charset=utf8'
+    });
+    final body = json.decode(response.body);
+    List<PostDTO> posts = [];
+    for (final item in body) {
+      posts.add(PostDTO.fromJson(item));
+    }
+    return posts;
+  }
+
+  Future<PostDTO> getPost(int id) async {
+    Uri url = Uri.https('jsonplaceholder.typicode.com', 'posts/$id');
+    final response = await http.get(url, headers: {
+      'Content-Type': 'application/json; charset=utf8'
+    });
+    final body = json.decode(response.body);
+    return PostDTO.fromJson(body);
+  }
+
+  Future<PostDTO> editPost(PostDTO post) async {
+    Uri url = Uri.https('jsonplaceholder.typicode.com', 'posts/${post.id}');
+    final response = await http.put(url, headers: {
+      'Content-Type': 'application/json; charset=utf8'
+    },body: post.toJson());
+    final body = json.decode(response.body);
+    return PostDTO.fromJson(body);
+  }
+
+  Future<void> deletePost(int id) async {
+    Uri url = Uri.https('jsonplaceholder.typicode.com', 'posts/$id');
+    await http.delete(url, headers: {
+      'Content-Type': 'application/json; charset=utf8'
+    });
   }
 }

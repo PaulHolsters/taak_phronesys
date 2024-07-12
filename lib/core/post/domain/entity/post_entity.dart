@@ -1,12 +1,16 @@
+import 'package:taak_phronesys/core/post/domain/entity/comment_entity.dart';
+
 class PostEntity {
-  const PostEntity(
+   PostEntity(
       {required this.id,
       required this.title,
       required this.body,
-      required this.userId});
+      required this.userId,
+      this.comments});
 
   final int id;
-  final String title;
-  final String body;
+  String title;
+  String body;
   final int userId;
+  List<CommentEntity>? comments;
 }
