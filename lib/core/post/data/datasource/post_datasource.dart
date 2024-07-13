@@ -31,11 +31,16 @@ class PostDataSource {
   }
 
   Future<PostDTO> editPost(PostDTO post) async {
+    print(post.title);
+    print(post.toJson());
+    print(post.toJson()['title']);
+    print(post.toJson()['body']);
     Uri url = Uri.https('jsonplaceholder.typicode.com', 'posts/${post.id}');
     final response = await http.put(url, headers: {
-      'Content-Type': 'application/json; charset=utf8'
-    },body: post.toJson());
+      'Content-Type': 'application/json'
+    },body: json.encode(post.toJson()));
     final body = json.decode(response.body);
+    print('request is done');
     return PostDTO.fromJson(body);
   }
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:taak_phronesys/core/post/data/datasource/post_datasource.dart';
 import 'package:taak_phronesys/core/post/data/repository/post_repository_impl.dart';
@@ -17,15 +19,31 @@ class _PostListPageState extends State<PostListPage> {
   PostsController? pc;
   List<PostEntity>? posts;
 
-  _setView(BuildContext context, int postId) async {
-    Navigator.of(context)
+  _setView(BuildContext context, int postId, int index) async {
+    var response = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => PostDetailPage(postId)));
+    // the purpose of the following is to gain performance by altering the posts list before actually fetching the updated let from the server
+    if(response[0]=='delete'){
+      var post = posts!.firstWhere((p)=>p.id==response[1].id);
+      setState(() {
+        posts!.remove(post);
+      });
+    } else{
+      // todo fix replacement
+      var post = posts!.firstWhere((p)=>p.id==response[1].id);
+      posts!.remove(post);
+      PostEntity p = response[1];
+      setState(() {
+        posts!.insert(index, p);
+      });
+    }   
+    _fetchPosts();
   }
 
   _fetchPosts() async {
     final temp = await pc!.getPosts();
     setState(() {
-      posts = temp;
+      posts = temp.toList();
     });
   }
 
@@ -39,7 +57,7 @@ class _PostListPageState extends State<PostListPage> {
   _getPosts() async {
     final temp = await pc!.getPosts();
     setState(() {
-      posts = temp;
+      posts = temp.toList();
     });
   }
 
@@ -60,7 +78,7 @@ class _PostListPageState extends State<PostListPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   onTap: () {
-                    _setView(context, posts![index].id);
+                    _setView(context, posts![index].id,index);
                   },
                 )),
       );
