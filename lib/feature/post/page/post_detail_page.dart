@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:taak_phronesys/core/post/domain/entity/post_entity.dart';
 import 'package:taak_phronesys/feature/post/controller/post_detail_controller.dart';
+import 'package:taak_phronesys/feature/post/page/active_connection.dart';
 import 'package:taak_phronesys/feature/post/widget/comments_widget.dart';
 
 class PostDetailPage extends StatefulWidget {
@@ -19,40 +19,87 @@ class _PostDetailPageState extends State<PostDetailPage> {
   bool _isSendingDelete = false;
   bool _isSendingEdit = false;
 
-  _deletePost(BuildContext context) async {
-    setState(() {
-      _isSendingDelete = true;
-    });
-    await pdc!.deletePost(_post!.id);
-    // todo geef het id terug aan home zodat het reeds manueel verwijderd kan worden en dan ee refetch kan gebeuren
-    //      hou daarbij rekening met de index
-    //      zoek op hoe je bij het teruggaan ook ineens scroll tot de aangeklikte post in geval van een edit
-    Navigator.of(context).pop(['delete', _post]);
-  }
-
-  _editPost(BuildContext context) async {
-    setState(() {
-      _isSendingEdit = true;
-    });
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      PostEntity response = await pdc!.editPost(_post!);
-      Navigator.of(context).pop(['edit', response]);
-    }
-  }
-
   @override
   void initState() {
     pdc = PostDetailsController();
+    // geen internet => snackbar ipv getPost
     _getPost();
     super.initState();
   }
 
   _getPost() async {
-    final temp = await pdc!.getPost(widget.postId);
-    setState(() {
-      _post = temp;
-    });
+    final hasConnection = await ActiveConnection.hasConnection();
+    if (hasConnection) {
+      final temp = await pdc!.getPost(widget.postId);
+      temp.fold((l) {
+        setState(() {
+          _post = l;
+        });
+      }, (r) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(backgroundColor: Colors.red, content: Text(r.message)));
+      });
+    } else {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+              'Check your internet connection. Then go back to home page and try again.')));
+    }
+  }
+
+  _deletePost(BuildContext context) async {
+    final hasConnection = await ActiveConnection.hasConnection();
+    if (hasConnection) {
+      setState(() {
+        _isSendingDelete = true;
+      });
+      final res = await pdc!.deletePost(_post!.id);
+      res.fold((ifLeft) {
+        Navigator.of(context).pop(['delete', ifLeft]);
+      }, (ifRight) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            backgroundColor: Colors.red, content: Text(ifRight.message)));
+        setState(() {
+          _isSendingDelete = false;
+        });
+      });
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Check your internet connection and try again.')));
+    }
+  }
+
+  _editPost(BuildContext context) async {
+    final hasConnection = await ActiveConnection.hasConnection();
+    if (hasConnection) {
+      setState(() {
+        _isSendingEdit = true;
+      });
+      if (_formKey.currentState!.validate()) {
+        _formKey.currentState!.save();
+        final response = await pdc!.editPost(_post!);
+        response.fold((ifLeft) {
+          Navigator.of(context).pop(['edit', ifLeft]);
+        }, (ifRight) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.red, content: Text(ifRight.message)));
+          setState(() {
+            _isSendingEdit = false;
+          });
+        });
+      }
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Check your internet connection and try again.')));
+    }
   }
 
   _openComments(BuildContext context) {

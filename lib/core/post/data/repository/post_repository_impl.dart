@@ -1,4 +1,6 @@
+import 'package:dartz/dartz.dart';
 import 'package:taak_phronesys/core/post/data/datasource/comment_datasource.dart';
+import 'package:taak_phronesys/core/post/data/datasource/failure.dart';
 import 'package:taak_phronesys/core/post/data/datasource/post_datasource.dart';
 import 'package:taak_phronesys/core/post/data/dto/comment_dto.dart';
 import 'package:taak_phronesys/core/post/data/dto/post_dto.dart';
@@ -7,57 +9,73 @@ import 'package:taak_phronesys/core/post/domain/repository/post_repository.dart'
 import 'package:taak_phronesys/core/post/domain/entity/post_entity.dart';
 
 class PostRepositoryImpl extends PostRepository {
-  // is dit 1/1 de PostRepository qua acties? da's de bedoeling ja 
-  // hier gebeurt ook de omzetting van DTO=>entity
-  // 
   final PostDataSource _postDataSource = PostDataSource();
   final CommentDataSource _commentDataSource = CommentDataSource();
 
   @override
-  Future<PostEntity> getPost(int postId) async {
+  Future<Either<PostEntity,Failure>> getPost(int postId) async {
     try {
-      PostDTO postsDTO = await _postDataSource.getPost(postId);
-      List<CommentDTO> commentDTOs = await _commentDataSource.getComments(postId);
-      PostEntity post = mapper.mapDTOtoEntity(postsDTO);
-      List<CommentEntity> comments = [];
-      for (final item in commentDTOs){
-        comments.add(mapper.mapDTOtoEntity(item));
+      // todo groepeer requests
+      Either<PostDTO,Failure> resPostsDTO = await _postDataSource.getPost(postId);
+      Either<List<CommentDTO>,Failure> resCommentDTOs = await _commentDataSource.getComments(postId);
+      PostEntity? post;
+      resPostsDTO.fold((ifLeft){
+        post = mapper.mapDTOtoEntity(ifLeft);
+      }, (ifRight){
+        return Right(ifRight);
+      });
+      List<CommentEntity>? comments;
+      return resCommentDTOs.fold((ifLeft){
+      comments = [];
+      for (final item in ifLeft){
+        comments!.add(mapper.mapDTOtoEntity(item));
       }
-      post.comments = comments;
-      return post;
+      post!.comments = comments;
+      return Left(post!);
+      }, (ifRight){
+          return Right(ifRight);
+      });
     } on Exception catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<PostEntity> editPost(PostEntity post) async {
+  Future<Either<PostEntity,Failure>> editPost(PostEntity post) async {
     try {
-      PostDTO postsDTO = await _postDataSource.editPost(mapper.mapEntityToDTO(post));
-      return mapper.mapDTOtoEntity(postsDTO);
+      Either<PostDTO,Failure> postDTORes = await _postDataSource.editPost(mapper.mapEntityToDTO(post));
+      return postDTORes.fold((ifLeft){
+          return Left(mapper.mapDTOtoEntity(ifLeft));
+      }, (ifRight){
+        return Right(ifRight);
+      });
     } on Exception catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<void> deletePost(int postId) async {
+  Future<Either<void,Failure>> deletePost(int postId) async {
     try {
-      await _postDataSource.deletePost(postId);
+      return await _postDataSource.deletePost(postId);
     } on Exception catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<List<PostEntity>> getPosts() async {
+  Future<Either<List<PostEntity>,Failure>> getPosts() async {
     try {
-      List<PostDTO> postsDTO = await _postDataSource.getPosts();
+      Either<List<PostDTO>,Failure> postDTORes = await _postDataSource.getPosts();
+      return postDTORes.fold((ifLeft){
       List<PostEntity> posts = [];
-      for (final item in postsDTO) {
+      for (final item in ifLeft) {
         posts.add(mapper.mapDTOtoEntity(item));
       }
-      return posts;
+      return Left(posts);
+      }, (ifRight){
+          return Right(ifRight);
+      });
     } on Exception catch (e) {
       rethrow;
     }

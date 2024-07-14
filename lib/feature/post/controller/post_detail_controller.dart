@@ -1,3 +1,5 @@
+import 'package:dartz/dartz.dart';
+import 'package:taak_phronesys/core/post/data/datasource/failure.dart';
 import 'package:taak_phronesys/core/post/data/repository/post_repository_impl.dart';
 import 'package:taak_phronesys/core/post/domain/entity/post_entity.dart';
 import 'package:taak_phronesys/core/post/domain/usecase/delete_post_usecase.dart';
@@ -12,17 +14,15 @@ class PostDetailsController {
   final DeletePostUsecase _deletePostUsecase =
       DeletePostUsecase(repository: PostRepositoryImpl());
 
-  Future<PostEntity> getPost(int postId) async {
-    PostEntity post = await _getPostUsecase.call(postId);
-    return post;
+  Future<Either<PostEntity,Failure>> getPost(int postId) async {
+    return await _getPostUsecase.call(postId);
   }
 
-  Future<PostEntity> editPost(PostEntity postToEdit) async {
-    PostEntity post = await _editPostUsecase.call(postToEdit);
-    return post;
+  Future<Either<PostEntity,Failure>> editPost(PostEntity postToEdit) async {
+    return await _editPostUsecase.call(postToEdit);
   }
 
-  Future<void> deletePost(int postId) async {
-    await _deletePostUsecase.call(postId);
+  Future<Either<void,Failure>> deletePost(int postId) async {
+    return await _deletePostUsecase.call(postId);
   }
 }

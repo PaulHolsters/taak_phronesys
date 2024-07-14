@@ -1,11 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:taak_phronesys/core/post/data/datasource/post_datasource.dart';
-import 'package:taak_phronesys/core/post/data/repository/post_repository_impl.dart';
 import 'package:taak_phronesys/core/post/domain/entity/post_entity.dart';
-import 'package:taak_phronesys/core/post/domain/usecase/get_post_list_usecase.dart';
 import 'package:taak_phronesys/feature/post/controller/post_list_controller.dart';
+import 'package:taak_phronesys/feature/post/page/active_connection.dart';
 import 'package:taak_phronesys/feature/post/page/post_detail_page.dart';
 
 class PostListPage extends StatefulWidget {
@@ -22,51 +18,61 @@ class _PostListPageState extends State<PostListPage> {
   _setView(BuildContext context, int postId, int index) async {
     var response = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => PostDetailPage(postId)));
-    // the purpose of the following is to gain performance by altering the posts list before actually fetching the updated let from the server
-    if(response[0]=='delete'){
-      var post = posts!.firstWhere((p)=>p.id==response[1].id);
+    // the purpose of the following is to gain performance by altering the posts list before actually fetching the updated one from the server
+    if (response[0] == 'delete') {
+      var post = posts!.firstWhere((p) => p.id == response[1].id);
       setState(() {
         posts!.remove(post);
       });
-    } else{
-      // todo fix replacement
-      var post = posts!.firstWhere((p)=>p.id==response[1].id);
+    } else {
+      var post = posts!.firstWhere((p) => p.id == response[1].id);
       posts!.remove(post);
       PostEntity p = response[1];
       setState(() {
         posts!.insert(index, p);
       });
-    }   
+    }
     _fetchPosts();
   }
 
   _fetchPosts() async {
-    final temp = await pc!.getPosts();
-    setState(() {
-      posts = temp.toList();
-    });
+    final hasConnection = await ActiveConnection.hasConnection();
+    if (hasConnection) {
+      final temp = await pc!.getPosts();
+      temp.fold((l) {
+        setState(() {
+          posts = l;
+        });
+      }, (r) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(backgroundColor: Colors.red, content: Text(r.message)));
+      });
+    } else  {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(backgroundColor: Colors.red, content: Text('Check your internet connection en refresh the data.')));
+      setState(() {
+         posts = [];    
+      });
+     
+    }
   }
 
   @override
   void initState() {
     pc = PostsController();
-    _getPosts();
+    _fetchPosts();
     super.initState();
-  }
-
-  _getPosts() async {
-    final temp = await pc!.getPosts();
-    setState(() {
-      posts = temp.toList();
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // geen internet connectie posts=[] + snackbar functie => init functie
     Widget content = const Center(child: CircularProgressIndicator());
     if (posts != null) {
       content = RefreshIndicator(
-        onRefresh: () async{
+        onRefresh: () async {
           _fetchPosts();
         },
         child: ListView.builder(
@@ -78,7 +84,7 @@ class _PostListPageState extends State<PostListPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   onTap: () {
-                    _setView(context, posts![index].id,index);
+                    _setView(context, posts![index].id, index);
                   },
                 )),
       );
