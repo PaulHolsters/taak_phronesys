@@ -37,6 +37,10 @@ class CommentsWidget extends StatelessWidget {
               itemCount: comments.length,
               itemBuilder: (ctx, index) => ListTile(
                     title: Text(
+                      comments[index].name,
+                      softWrap: true,
+                    ),
+                    subtitle: Text(
                       comments[index].body,
                       softWrap: true,
                     ),
