@@ -22,7 +22,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
   @override
   void initState() {
     pdc = PostDetailsController();
-    // geen internet => snackbar ipv getPost
     _getPost();
     super.initState();
   }
@@ -57,7 +56,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
       });
       final res = await pdc!.deletePost(_post!.id);
       res.fold((ifLeft) {
-        Navigator.of(context).pop(['delete', ifLeft]);
+        Navigator.of(context).pop(['delete', _post]);
       }, (ifRight) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -134,6 +133,8 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     key: _formKey,
                     child: Column(
                       children: [
+                        // in xcode kan je hier een error zien, maar dat zou een bug bij apple zijn
+                        // https://forums.developer.apple.com/forums/thread/738726
                         TextFormField(
                           decoration:
                               const InputDecoration(label: Text('title')),

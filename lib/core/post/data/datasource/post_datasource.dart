@@ -3,26 +3,14 @@ import 'package:dartz/dartz.dart';
 import 'package:taak_phronesys/core/post/data/datasource/failure.dart';
 import 'package:taak_phronesys/core/post/data/dto/post_dto.dart';
 import 'package:http/http.dart' as http;
+import 'package:taak_phronesys/core/post/data/service/api_service.dart';
+import 'package:dio/dio.dart';
 
 class PostDataSource {
 
   Future<Either<List<PostDTO>,Failure>> getPosts() async {
-    Uri url = Uri.https('jsonplaceholder.typicode.com', 'posts');
-    // todo check if there is internet if not => Failure
-    // todo if the response isn't there after one minute => Failure
-    
-    final response = await http.get(url, headers: {
-      'Content-Type': 'application/json'
-    });
-    if(response.statusCode!=200){
-      return const Right(Failure('Something went wrong. Try again later!'));
-    }
-    final body = json.decode(response.body);
-    List<PostDTO> posts = [];
-    for (final item in body) {
-      posts.add(PostDTO.fromJson(item));
-    }
-    return Left(posts);
+    final apiService = ApiService(Dio(BaseOptions(contentType: "application/json")));
+    return await apiService.getPosts();
   }
 
   Future<Either<PostDTO,Failure>> getPost(int id) async {

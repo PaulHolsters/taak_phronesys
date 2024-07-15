@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:taak_phronesys/core/post/domain/entity/post_entity.dart';
 import 'package:taak_phronesys/feature/post/controller/post_list_controller.dart';
 import 'package:taak_phronesys/feature/post/page/active_connection.dart';
+
 import 'package:taak_phronesys/feature/post/page/post_detail_page.dart';
 
 class PostListPage extends StatefulWidget {
@@ -68,7 +69,6 @@ class _PostListPageState extends State<PostListPage> {
 
   @override
   Widget build(BuildContext context) {
-    // geen internet connectie posts=[] + snackbar functie => init functie
     Widget content = const Center(child: CircularProgressIndicator());
     if (posts != null) {
       content = RefreshIndicator(

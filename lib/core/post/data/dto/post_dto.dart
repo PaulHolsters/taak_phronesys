@@ -1,3 +1,7 @@
+import 'package:json_annotation/json_annotation.dart';
+part 'post_dto.g.dart';
+
+@JsonSerializable()
 class PostDTO{
 
     PostDTO({
