@@ -107,8 +107,14 @@ class _PostDetailPageState extends State<PostDetailPage> {
         builder: (ctx) => CommentsWidget(_post!.comments!),
         constraints: BoxConstraints(
             minWidth: double.infinity,
-            minHeight: (MediaQuery.sizeOf(context).height) * (4.2 / 7.2),
-            maxHeight: (MediaQuery.sizeOf(context).height) * (4.2 / 7.2)),
+            minHeight:
+                MediaQuery.of(context).orientation == Orientation.portrait
+                    ? (MediaQuery.sizeOf(context).height) * (0.7 / 1.2)
+                    : MediaQuery.sizeOf(context).height,
+            maxHeight:
+                MediaQuery.of(context).orientation == Orientation.portrait
+                    ? (MediaQuery.sizeOf(context).height) * (0.7 / 1.2)
+                    : MediaQuery.sizeOf(context).height),
         shape: const Border(),
         isScrollControlled: true,
         useSafeArea: true);
@@ -120,128 +126,131 @@ class _PostDetailPageState extends State<PostDetailPage> {
     if (_post != null) {
       String comment = 'This post has no comments yet.';
       if (_post!.comments!.isNotEmpty) comment = _post!.comments![0].body;
-      content = OverflowBox(
-        maxHeight: double.infinity,
-        alignment: Alignment.topLeft,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
+      content = SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.all(8),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        // in xcode kan je hier een error zien, maar dat zou een bug bij apple zijn
-                        // https://forums.developer.apple.com/forums/thread/738726
-                        TextFormField(
-                          decoration:
-                              const InputDecoration(label: Text('title')),
-                          initialValue: _post!.title,
-                          validator: (value) {
-                            if (value == null ||
-                                value.isEmpty ||
-                                value.trim().length <= 1) {
-                              return 'Give the title of the post an appropriate length.';
-                            }
-                            return null;
-                          },
-                          maxLines: 2,
-                          onSaved: (value) {
-                            _post!.title = value!;
-                          },
-                        ),
-                        const SizedBox(
-                          height: 6,
-                        ),
-                        TextFormField(
-                          decoration:
-                              const InputDecoration(label: Text('body')),
-                          initialValue: _post!.body,
-                          validator: (value) {
-                            if (value == null ||
-                                value.isEmpty ||
-                                value.trim().length <= 1) {
-                              return 'Give the body of the post an appropriate length.';
-                            }
-                            return null;
-                          },
-                          maxLines: 6,
-                          onSaved: (value) {
-                            _post!.body = value!;
-                          },
-                        ),
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            ElevatedButton(
-                                style: ButtonStyle(
-                                    backgroundColor:
-                                        WidgetStateProperty.all(Colors.red)),
-                                onPressed: _isSendingEdit
-                                    ? null
-                                    : () {
-                                        _deletePost(context);
-                                      },
-                                child: _isSendingDelete
-                                    ? const SizedBox(
-                                        height: 16,
-                                        width: 16,
-                                        child: CircularProgressIndicator())
-                                    : const Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.white),
-                                      )),
-                            const SizedBox(
-                              width: 12,
-                            ),
-                            ElevatedButton(
-                                onPressed: _isSendingDelete
-                                    ? null
-                                    : () {
-                                        _editPost(context);
-                                      },
-                                child: _isSendingEdit
-                                    ? const SizedBox(
-                                        height: 16,
-                                        width: 16,
-                                        child: CircularProgressIndicator())
-                                    : const Text('Edit'))
-                          ],
-                        ),
-                      ],
-                    )),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Divider(),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'Comments ${_post!.comments!.length}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _post!.comments == null
-                          ? null
-                          : () {
-                              _openComments(context);
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          // in xcode kan je hier een error zien, maar dat zou een bug bij apple zijn
+                          // https://forums.developer.apple.com/forums/thread/738726
+                          TextFormField(
+                            decoration:
+                                const InputDecoration(label: Text('title')),
+                            initialValue: _post!.title,
+                            validator: (value) {
+                              if (value == null ||
+                                  value.isEmpty ||
+                                  value.trim().length <= 1) {
+                                return 'Give the title of the post an appropriate length.';
+                              }
+                              return null;
                             },
-                      child: Card(
-                          child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(comment),
+                            maxLines: 2,
+                            onSaved: (value) {
+                              _post!.title = value!;
+                            },
+                          ),
+                          const SizedBox(
+                            height: 6,
+                          ),
+                          TextFormField(
+                            decoration:
+                                const InputDecoration(label: Text('body')),
+                            initialValue: _post!.body,
+                            validator: (value) {
+                              if (value == null ||
+                                  value.isEmpty ||
+                                  value.trim().length <= 1) {
+                                return 'Give the body of the post an appropriate length.';
+                              }
+                              return null;
+                            },
+                            maxLines: 6,
+                            onSaved: (value) {
+                              _post!.body = value!;
+                            },
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton(
+                                  style: ButtonStyle(
+                                      backgroundColor:
+                                          WidgetStateProperty.all(Colors.red)),
+                                  onPressed: _isSendingEdit
+                                      ? null
+                                      : () {
+                                          _deletePost(context);
+                                        },
+                                  child: _isSendingDelete
+                                      ? const SizedBox(
+                                          height: 16,
+                                          width: 16,
+                                          child: CircularProgressIndicator())
+                                      : const Text(
+                                          'Delete',
+                                          style: TextStyle(color: Colors.white),
+                                        )),
+                              const SizedBox(
+                                width: 12,
+                              ),
+                              ElevatedButton(
+                                  onPressed: _isSendingDelete
+                                      ? null
+                                      : () {
+                                          _editPost(context);
+                                        },
+                                  child: _isSendingEdit
+                                      ? const SizedBox(
+                                          height: 16,
+                                          width: 16,
+                                          child: CircularProgressIndicator())
+                                      : const Text('Edit'))
+                            ],
+                          ),
+                        ],
                       )),
-                    ),
-                  ],
+                ),
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Divider(),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Comments ${_post!.comments!.length}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _post!.comments == null
+                            ? null
+                            : () {
+                                _openComments(context);
+                              },
+                        child: Card(
+                            child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(comment),
+                        )),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

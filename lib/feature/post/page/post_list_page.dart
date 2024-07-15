@@ -49,14 +49,15 @@ class _PostListPageState extends State<PostListPage> {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(backgroundColor: Colors.red, content: Text(r.message)));
       });
-    } else  {
+    } else {
       ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.red, content: Text('Check your internet connection en refresh the data.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.red,
+          content:
+              Text('Check your internet connection and refresh the data.')));
       setState(() {
-         posts = [];    
+        posts = [];
       });
-     
     }
   }
 
@@ -71,22 +72,24 @@ class _PostListPageState extends State<PostListPage> {
   Widget build(BuildContext context) {
     Widget content = const Center(child: CircularProgressIndicator());
     if (posts != null) {
-      content = RefreshIndicator(
-        onRefresh: () async {
-          _fetchPosts();
-        },
-        child: ListView.builder(
-            itemCount: posts!.length,
-            itemBuilder: (ctx, index) => ListTile(
-                  title: Text(
-                    posts![index].title,
-                    softWrap: true,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onTap: () {
-                    _setView(context, posts![index].id, index);
-                  },
-                )),
+      content = SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            _fetchPosts();
+          },
+          child: ListView.builder(
+              itemCount: posts!.length,
+              itemBuilder: (ctx, index) => ListTile(
+                    title: Text(
+                      posts![index].title,
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    onTap: () {
+                      _setView(context, posts![index].id, index);
+                    },
+                  )),
+        ),
       );
     }
     return Scaffold(
