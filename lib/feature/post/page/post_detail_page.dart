@@ -129,134 +129,128 @@ class _PostDetailPageState extends State<PostDetailPage> {
       content = SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          // in xcode kan je hier een error zien, maar dat zou een bug bij apple zijn
-                          // https://forums.developer.apple.com/forums/thread/738726
-                          TextFormField(
-                            decoration:
-                                const InputDecoration(label: Text('title')),
-                            initialValue: _post!.title,
-                            validator: (value) {
-                              if (value == null ||
-                                  value.isEmpty ||
-                                  value.trim().length <= 1) {
-                                return 'Give the title of the post an appropriate length.';
-                              }
-                              return null;
-                            },
-                            maxLines: 2,
-                            onSaved: (value) {
-                              _post!.title = value!;
-                            },
-                          ),
-                          const SizedBox(
-                            height: 6,
-                          ),
-                          TextFormField(
-                            decoration:
-                                const InputDecoration(label: Text('body')),
-                            initialValue: _post!.body,
-                            validator: (value) {
-                              if (value == null ||
-                                  value.isEmpty ||
-                                  value.trim().length <= 1) {
-                                return 'Give the body of the post an appropriate length.';
-                              }
-                              return null;
-                            },
-                            maxLines: 6,
-                            onSaved: (value) {
-                              _post!.body = value!;
-                            },
-                          ),
-                          const SizedBox(
-                            height: 12,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Form(
+                          key: _formKey,
+                          child: Column(
                             children: [
-                              ElevatedButton(
-                                  style: ButtonStyle(
-                                      backgroundColor:
-                                          WidgetStateProperty.all(Colors.red)),
-                                  onPressed: _isSendingEdit
-                                      ? null
-                                      : () {
-                                          _deletePost(context);
-                                        },
-                                  child: _isSendingDelete
-                                      ? const SizedBox(
-                                          height: 16,
-                                          width: 16,
-                                          child: CircularProgressIndicator())
-                                      : const Text(
-                                          'Delete',
-                                          style: TextStyle(color: Colors.white),
-                                        )),
-                              const SizedBox(
-                                width: 12,
+                              // in xcode kan je hier een error zien, maar dat zou een bug bij apple zijn
+                              // https://forums.developer.apple.com/forums/thread/738726
+                              TextFormField(
+                                decoration:
+                                    const InputDecoration(label: Text('title')),
+                                initialValue: _post!.title,
+                                validator: (value) {
+                                  if (value == null ||
+                                      value.isEmpty ||
+                                      value.trim().length <= 1) {
+                                    return 'Give the title of the post an appropriate length.';
+                                  }
+                                  return null;
+                                },
+                                maxLines: 2,
+                                onSaved: (value) {
+                                  _post!.title = value!;
+                                },
                               ),
-                              ElevatedButton(
-                                  onPressed: _isSendingDelete
-                                      ? null
-                                      : () {
-                                          _editPost(context);
-                                        },
-                                  child: _isSendingEdit
-                                      ? const SizedBox(
-                                          height: 16,
-                                          width: 16,
-                                          child: CircularProgressIndicator())
-                                      : const Text('Edit'))
+                              const SizedBox(
+                                height: 6,
+                              ),
+                              TextFormField(
+                                decoration:
+                                    const InputDecoration(label: Text('body')),
+                                initialValue: _post!.body,
+                                validator: (value) {
+                                  if (value == null ||
+                                      value.isEmpty ||
+                                      value.trim().length <= 1) {
+                                    return 'Give the body of the post an appropriate length.';
+                                  }
+                                  return null;
+                                },
+                                maxLines: 6,
+                                onSaved: (value) {
+                                  _post!.body = value!;
+                                },
+                              ),
+                              const SizedBox(
+                                height: 12,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  ElevatedButton(
+                                      style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStateProperty.all(Colors.red)),
+                                      onPressed: _isSendingEdit
+                                          ? null
+                                          : () {
+                                              _deletePost(context);
+                                            },
+                                      child: _isSendingDelete
+                                          ? const SizedBox(
+                                              height: 16,
+                                              width: 16,
+                                              child: CircularProgressIndicator())
+                                          : const Text(
+                                              'Delete',
+                                              style: TextStyle(color: Colors.white),
+                                            )),
+                                  const SizedBox(
+                                    width: 12,
+                                  ),
+                                  ElevatedButton(
+                                      onPressed: _isSendingDelete
+                                          ? null
+                                          : () {
+                                              _editPost(context);
+                                            },
+                                      child: _isSendingEdit
+                                          ? const SizedBox(
+                                              height: 16,
+                                              width: 16,
+                                              child: CircularProgressIndicator())
+                                          : const Text('Edit'))
+                                ],
+                              ),
                             ],
+                          )),
+                  const SizedBox(height: 12,),        
+                  Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Divider(),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Comments ${_post!.comments!.length}',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _post!.comments == null
+                                ? null
+                                : () {
+                                    _openComments(context);
+                                  },
+                            child: Card(
+                                child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(comment),
+                            )),
                           ),
                         ],
-                      )),
-                ),
               ),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Divider(),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Comments ${_post!.comments!.length}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: _post!.comments == null
-                            ? null
-                            : () {
-                                _openComments(context);
-                              },
-                        child: Card(
-                            child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(comment),
-                        )),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+                ]
+                    ),
+            ),
+          )));
     }
     return GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
