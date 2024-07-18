@@ -13,6 +13,8 @@ class PostRepositoryImpl extends PostRepository {
   final PostDataSource _postDataSource = PostDataSource();
   final CommentDataSource _commentDataSource = CommentDataSource();
 
+  // getPost executes two requests: one for the post and one for the comments of that post
+  // the results of both requests or then merged into a single PostEntity
   @override
   Future<Either<PostEntity, Failure>> getPost(int postId) async {
     try {
