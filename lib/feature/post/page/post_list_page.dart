@@ -16,7 +16,39 @@ class _PostListPageState extends State<PostListPage> {
   PostsController? pc;
   List<PostEntity>? posts;
 
-  _setView(BuildContext context, int postId, int index) async {
+  @override
+  void initState() {
+    pc = PostsController();
+    _fetchPosts();
+    super.initState();
+  }
+
+  _fetchPosts() async {
+    final hasConnection = await ActiveConnection.hasConnection();
+    if (hasConnection) {
+      final temp = await pc!.getPosts();
+      temp.fold((l) {
+        setState(() {
+          posts = l;
+        });
+      }, (r) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(backgroundColor: Colors.red, content: Text(r.message)));
+      });
+    } else if (mounted && context.mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.red,
+          content:
+              Text('Check your internet connection and refresh the data.')));
+      setState(() {
+        posts = [];
+      });
+    }
+  }
+
+  _goToPostDetailPage(BuildContext context, int postId, int index) async {
     var response = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => PostDetailPage(postId)));
     // the purpose of the following is to gain performance by altering the posts list before actually fetching the updated one from the server
@@ -34,38 +66,6 @@ class _PostListPageState extends State<PostListPage> {
       });
     }
     _fetchPosts();
-  }
-
-  _fetchPosts() async {
-    final hasConnection = await ActiveConnection.hasConnection();
-    if (hasConnection) {
-      final temp = await pc!.getPosts();
-      temp.fold((l) {
-        setState(() {
-          posts = l;
-        });
-      }, (r) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(backgroundColor: Colors.red, content: Text(r.message)));
-      });
-    } else {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          backgroundColor: Colors.red,
-          content:
-              Text('Check your internet connection and refresh the data.')));
-      setState(() {
-        posts = [];
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    pc = PostsController();
-    _fetchPosts();
-    super.initState();
   }
 
   @override
@@ -86,7 +86,7 @@ class _PostListPageState extends State<PostListPage> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     onTap: () {
-                      _setView(context, posts![index].id, index);
+                      _goToPostDetailPage(context, posts![index].id, index);
                     },
                   )),
         ),
